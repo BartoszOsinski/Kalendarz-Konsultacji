@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Calendar App</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css') }}">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Montserrat", sans-serif;
+            font-weight: 500;
+        }
+
+        .h3 {
+            padding: 5vh;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .cal-modal-container {
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .cal-modal {
+            background: #1D252C;
+            color: #fff;
+            padding: 40px 60px;
+            text-align: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .cal-modal h3 {
+            font-size: 37px;
+            font-weight: 900;
+            margin: 0 0 1rem;
+        }
+
+        #calendar {
+            padding: 3vh;
+            display: inline-block;
+        }
+
+        #calendar .placeholder {
+            display: none;
+            width: 300px;
+        }
+
+        #calendar .flatpickr-calendar {
+            background: none;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            color: #fff;
+            top: 0;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-innerContainer {
+            overflow: visible;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-innerContainer .flatpickr-weekdays {
+            overflow: visible;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-month {
+            color: inherit;
+            margin-bottom: 10px;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-month .flatpickr-current-month {
+            font-size: 16px;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-month .flatpickr-current-month .numInputWrapper {
+            display: none;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-prev-month, #calendar .flatpickr-calendar .flatpickr-months .flatpickr-next-month {
+            top: calc(50% - 23px);
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-prev-month svg, #calendar .flatpickr-calendar .flatpickr-months .flatpickr-next-month svg {
+            height: 46px;
+            width: 46px;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-prev-month svg path, #calendar .flatpickr-calendar .flatpickr-months .flatpickr-next-month svg path {
+            fill: #3DAE2B;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-prev-month {
+            left: -60px;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-months .flatpickr-next-month {
+            right: -60px;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-weekdays .flatpickr-weekdaycontainer {
+            max-width: 307.875px;
+            padding: 0 10px;
+            position: relative;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-weekdays .flatpickr-weekdaycontainer::after {
+            content: "";
+            background: #343F48;
+            position: absolute;
+            top: -32px;
+            bottom: -230px;
+            right: 0;
+            width: 1px;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-weekdays .flatpickr-weekdaycontainer:last-child::after {
+            content: none;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-weekdays .flatpickr-weekdaycontainer .flatpickr-weekday {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        #calendar .flatpickr-calendar .dayContainer {
+            box-shadow: none;
+            padding: 0 10px;
+            position: static;
+        }
+
+        #calendar .flatpickr-calendar .dayContainer:last-child::after {
+            content: none;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-day {
+            background: #fff;
+            border: 0;
+            color: #1D252C;
+            font-weight: 500;
+            transition: color 0.1s, background 0.1s;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-day:hover {
+            background: #3DAE2B;
+            color: #fff;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-day.flatpickr-disabled, #calendar .flatpickr-calendar .flatpickr-day.flatpickr-disabled:hover {
+            background: none;
+            color: #fff;
+            cursor: default;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-day.selected:not(.hidden), #calendar .flatpickr-calendar .flatpickr-day.selected:not(.hidden):hover, #calendar .flatpickr-calendar .flatpickr-day.selected:not(.hidden):focus {
+            background: #37A628;
+            color: #fff;
+        }
+
+        #calendar .flatpickr-calendar .flatpickr-day.nextMonthDay, #calendar .flatpickr-calendar .flatpickr-day.prevMonthDay {
+            background: none;
+            color: rgba(207, 210, 211, 0.1) !important;
+            cursor: default;
+            visibility: visible;
+        }
+
+        #calendar .calendar-events {
+            display: block;
+            justify-content: space-around;
+            margin-top: 30px;
+            min-height: 36px;
+        }
+
+        @media screen and (min-width: 992px) {
+            #calendar .calendar-events {
+                display: flex;
+                justify-content: space-around;
+            }
+        }
+
+        #calendar .calendar-events .event {
+            font-size: 29px;
+        }
+
+        #calendar .calendar-events .event .date {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        #calendar .calendar-events .event .location {
+            color: #3DAE2B;
+            font-weight: 800;
+            letter-spacing: -0.8px;
+        }
+
+        #calendar .calendar-events .event .description {
+            color: #ccc;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Global Styling */
+        #menu.collapsed .menu-container {
+            width: 30px; /* width of the handle */
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #content {
+            flex: 1;
+            padding: 0; /* Removed padding */
+            background-color: #f5f5f5;
+            display: flex; /* Make content a flex container */
+            align-items: center;
+            height: 100%;
+            justify-content: center;
+        }
+
+        /* Styling for the expandable menu */
+        .menu-item {
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 2px solid #ddd;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover, .menu-item:focus {
+            background-color: #e7e7e7;
+        }
+
+        .menu-item:first-child {
+            font-weight: bold;
+        }
+
+        /* New style for the menu container */
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* Updated menu styles */
+        #menu {
+            border-right: 2px solid #ddd;
+            overflow: hidden;
+            background-color: #f9f9f9;
+        }
+
+        /* Updated handle styles */
+        .menu-handle {
+            align-self: flex-end; /* right align the handle */
+            position: absolute;
+            right: -30px; /* Width of the handle */
+            top: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f9f9;
+            border-left: 2px solid #ddd;
+            cursor: pointer;
+        }
+
+        /* Hide the handle when the menu is expanded */
+        #menu:not(.collapsed) .menu-handle {
+            display: none;
+        }
+
+    </style>
+</head>
+
+<body>
+<div id="container">
+    <!-- Left Panel Menu -->
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <svg class="bi me-2" width="40" height="32">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+            <span class="fs-4">Kalendarz</span>
+        </a>
+        <hr>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="#" class="nav-link active" aria-current="page">
+                    <svg class="bi me-2" width="16" height="16">
+                        <use xlink:href="#home"></use>
+                    </svg>
+                    Strona Główna
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <svg class="bi me-2" width="16" height="16">
+                        <use xlink:href="#table"></use>
+                    </svg>
+                    Kontakt
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link text-white">
+                    <svg class="bi me-2" width="16" height="16">
+                        <use xlink:href="#grid"></use>
+                    </svg>
+                    Panel administracyjny
+                </a>
+            </li>
+        </ul>
+        <hr>
+    </div>
+
+    <!-- Content Area -->
+    <div class="cal-modal-container">
+        <div class="cal-modal">
+            <h3 class="h3">Kalendarz konsultacji</h3>
+            <div id="calendar">
+                <div class="placeholder"></div>
+                <div class="calendar-events">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/flatpickr.min.js') }}"></script>
+<script>
+    // generate events
+    var eventDates = {}
+    let day1 = formatDate(new Date(new Date().setMonth(new Date().getMonth() + 1)))
+    eventDates[day1] = [
+        'Event 1, Location',
+        'Event 2, Location 2'
+    ]
+    let day2 = formatDate(new Date(new Date().setDate(new Date().getDate() + 40)))
+    eventDates[day2] = [
+        'Event 2, Location 3',
+    ]
+
+    // set maxDates
+    var maxDate = {
+        1: new Date(new Date().setMonth(new Date().getMonth() + 17)), // +6 months
+        2: new Date(new Date().setMonth(new Date().getMonth() + 16)), // +6 months
+        3: new Date(new Date().setMonth(new Date().getMonth() + 15))  // +6 months
+    }
+
+    var flatpickr = $('#calendar .placeholder').flatpickr({
+        inline: true,
+        minDate: 'today',
+        maxDate: maxDate[3]
+        ,
+        showMonths: 1,
+        enable: Object.keys(eventDates),
+        disableMobile: "false",
+        onChange: function (date, str, inst) {
+            var contents = '';
+            if (date.length) {
+                for (i = 0; i < eventDates[str].length; i++) {
+                    contents += '<div class="event"><div class="date">' + flatpickr.formatDate(date[0], 'l J F') + '</div><div class="location">' + eventDates[str][i] + '</div></div>';
+                }
+            }
+            $('#calendar .calendar-events').html(contents)
+        },
+        locale: {
+            weekdays: {
+                shorthand: ["N", "P", "Wt", "Śr", "Czw", "Pt", "Sob"],
+                longhand: [
+                    "Niedziela",
+                    "Poniedziałek",
+                    "Wtorek",
+                    "Środa",
+                    "Czwartek",
+                    "Piątek",
+                    "Sobota",
+                ]
+            },
+            months: {
+                shorthand: ['Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Paź', 'Lis', 'Gru'],
+                longhand: ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'],
+            }
+        }
+    })
+
+    eventCaledarResize($(window));
+    $(window).on('resize', function () {
+        eventCaledarResize($(this))
+    })
+
+    function eventCaledarResize($el) {
+        var width = $el.width()
+        if (flatpickr.selectedDates.length) {
+            flatpickr.clear()
+        }
+        if (width >= 992 && flatpickr.config.showMonths !== 4) {
+            flatpickr.set('showMonths', 4)
+            flatpickr.set('maxDate', maxDate[3])
+        }
+        if (width < 992 && width >= 768 && flatpickr.config.showMonths !== 2) {
+            flatpickr.set('showMonths', 2)
+            flatpickr.set('maxDate', maxDate[2])
+        }
+        if (width < 768 && flatpickr.config.showMonths !== 1) {
+            flatpickr.set('showMonths', 1)
+            flatpickr.set('maxDate', maxDate[1])
+            $('.flatpickr-calendar').css('width', '')
+        }
+    }
+
+    function formatDate(date) {
+        let d = date.getDate();
+        let m = date.getMonth() + 1; //Month from 0 to 11
+        let y = date.getFullYear();
+        return '' + y + '-' + (m <= 9 ? '0' + m : m) + '-' + (d <= 9 ? '0' + d : d);
+    }
+
+    function toggleMenu() {
+        const menu = document.getElementById('menu');
+        if (menu.classList.contains('collapsed')) {
+            menu.classList.remove('collapsed');
+        } else {
+            menu.classList.add('collapsed');
+        }
+    }
+</script>
+</html>

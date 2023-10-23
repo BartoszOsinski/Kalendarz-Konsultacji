@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  flask_db:  # Renamed to be more relevant to Flask
+    image: mysql:5.7
+    volumes:
+      - flask_mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: flask_prod_db
+      MYSQL_USER: flask_user
+      MYSQL_PASSWORD: flask_password
+      MYSQL_ROOT_PASSWORD: secure_root_password
+
+  flask_web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "8010:8000"
+    depends_on:
+      - flask_db
+    environment:
+      - DATABASE_HOST=flask_db
+      - DATABASE_PORT=3310  # Ensure this port matches the MySQL service's exposed port if you're changing it.
+
+volumes:
+  flask_mysql_data:
